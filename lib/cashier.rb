@@ -27,7 +27,7 @@ module Cashier
     def store_fragment(fragment, *tags)
       return unless perform_caching?
 
-      tags = tags.flatten
+      tags = downcase_tags(tags.flatten)
 
       ActiveSupport::Notifications.instrument("store_fragment.cashier", :data => [fragment, tags]) do
         tags.each do |tag|
@@ -52,7 +52,7 @@ module Cashier
     def store_page_path(page_path, *tags)
       return unless perform_caching?
 
-      tags = tags.flatten
+      tags = downcase_tags(tags.flatten)
 
       ActiveSupport::Notifications.instrument("store_page_path.cashier", :data => [page_path, tags]) do
         tags.each do |tag|
@@ -75,6 +75,8 @@ module Cashier
     #
     def expire(*tags)
       return unless perform_caching?
+
+      tags = downcase_tags(tags.flatten)
 
       ActiveSupport::Notifications.instrument("expire.cashier", :data => tags) do
         # delete them from the cache
@@ -111,6 +113,9 @@ module Cashier
     #
     def clear
       ActiveSupport::Notifications.instrument("clear.cashier") do
+
+        tags = downcase_tags(tags.flatten)
+
         # delete them from the cache
         tags.each do |tag|
           clear_fragments_for(tag)
@@ -147,6 +152,7 @@ module Cashier
     #   # => ['key1', 'key2', 'key3']
     #
     def keys_for(tag)
+      tag = tag.downcase
       adapter.get_fragments_for_tag(tag)
     end
 
@@ -215,6 +221,12 @@ module Cashier
       end
 
       adapter.delete_path_tag(tag)
+    end
+
+    # Private: downcase tags
+    #
+    def downcase_tags(*tags)
+      tags.map(&:downcase)
     end
   end
 end
