@@ -114,7 +114,7 @@ module Cashier
     def clear
       ActiveSupport::Notifications.instrument("clear.cashier") do
 
-        tags = downcase_tags(tags.flatten)
+        tags = downcase_tags(self.tags.flatten)
 
         # delete them from the cache
         tags.each do |tag|
@@ -225,7 +225,7 @@ module Cashier
 
     # Private: downcase tags
     #
-    def downcase_tags(*tags)
+    def downcase_tags(tags = [])
       tags.map(&:downcase)
     end
   end
